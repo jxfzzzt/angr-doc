@@ -76,7 +76,6 @@ def main():
      that this is the value that is being copied!
     '''
     argv.append("HAHAHAHA") # argv[2]
-
     '''
      Initializes an entry state starting at the address of the program entry point
      We simply pass it the same kind of argument vector that would be passed to the
@@ -162,4 +161,6 @@ def test():
     assert output[:len(target)] == target
 
 if __name__ == "__main__":
-    print('The password is "%s"' % main())
+    result = main()
+    # print('The password is "%s"' % result)
+    print(result.decode(errors='replace'))
