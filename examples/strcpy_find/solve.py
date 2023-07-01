@@ -37,10 +37,6 @@ def main():
             raise Exception("No address found for function : "+funcName)
 
 
-    def get_byte(s, i):
-        pos = s.size() // 8 - 1 - i
-        return s[pos * 8 + 7 : pos * 8]
-
     '''
      load the binary, don't load extra libs to save time/memory from state explosion
     '''
