@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
 import angr
 import claripy
 import time
@@ -25,7 +23,9 @@ def main():
     # thus the 8 byte symbolic size. Hopefully we can find the constraints the binary
     # expects during symbolic execution
     flag_chars = [claripy.BVS('flag_%d' % i, 8) for i in range(input_len)]
-
+    print(flag_chars)
+    print(*flag_chars)
+    print(* (flag_chars + [claripy.BVV(b'\n')]))
     #extra \n for first input, then find the flag!
     flag = claripy.Concat( *flag_chars + [claripy.BVV(b'\n')])
 

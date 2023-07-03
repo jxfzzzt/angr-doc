@@ -77,6 +77,7 @@ def test():
     assert b'SOSNEAKY' in r
 
 if __name__ == '__main__':
+    print(basic_symbolic_execution())
     sys.stdout.buffer.write(basic_symbolic_execution())
 
 # You should be able to run this script and pipe its output to fauxware and

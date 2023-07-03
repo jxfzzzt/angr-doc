@@ -1,30 +1,7 @@
-#!/usr/bin/env python
-'''
-@author Kyle Ossinger (k0ss_sec)
-@desc   Tutorial solver for an example program.  I noticed most of the angr
-        examples were for solving for a password/flag rather than for finding
-        exploitable memory corruptions.  I hope this will lead you on the path
-        to finding your own memory corruptions.  Enjoy!
-
-'''
-
 import angr
-import claripy  # It is optimal to use claripy.BVV/BVS over state.solver.BVV/BVS
-                # EDITOR'S NOTE: this is somewhat true but it super super does
-                # not matter if you're just creating a few variables for
-                # initialization. do what's convenient. state.solver.BVS will
-                # trigger some instrumentation if people have asked to be
-                # notified whenever new variables are created, which doesn't
-                # usually happen.
+import claripy # 推荐使用
 
 def main():
-    '''
-     Just a helper function to grab function names from resolved symbols.
-     This will not be so easy if the binary is stripped.  You will have to
-     open the binary in a disassembler and find the addresses of the
-     functions you are trying to find/avoid in your paths rather than using
-     this helper function.
-    '''
     def getFuncAddress( funcName, plt=None ):
         found = [
             addr for addr,func in cfg.kb.functions.items()
@@ -35,11 +12,6 @@ def main():
             return found[0]
         else:
             raise Exception("No address found for function : "+funcName)
-
-
-    def get_byte(s, i):
-        pos = s.size() // 8 - 1 - i
-        return s[pos * 8 + 7 : pos * 8]
 
     '''
      load the binary, don't load extra libs to save time/memory from state explosion
@@ -99,7 +71,7 @@ def main():
      pointer) to make sure we're at our intended path destination before checking
      to make sure the other conditions are satisfied.
     '''
-    def check(state):
+    def check_strcpy(state):
         if (state.ip.args[0] == addrStrcpy):    # Ensure that we're at strcpy
             '''
              By looking at the disassembly, I've found that the pointer to the
@@ -135,7 +107,9 @@ def main():
      Here, we tell the explore function to find a path that satisfies our check
      method and avoids any paths that end up in addrBadFunc ('func3')
     '''
-    sm = sm.explore(find=check, avoid=(addrBadFunc,))
+    # sm = sm.explore(find=addrStrcpy, avoid=(addrBadFunc,)) 这样直接写地址也可以，但是不严谨
+    sm = sm.explore(find=check_strcpy, avoid=(addrBadFunc,))
+
 
     found = sm.found
     '''
@@ -161,6 +135,6 @@ def test():
     assert output[:len(target)] == target
 
 if __name__ == "__main__":
-    result = main()
-    # print('The password is "%s"' % result)
-    print(result.decode(errors='replace'))
+    result = main().decode('utf-8')
+    print(result)
+    print('The password is "%s"' % result)

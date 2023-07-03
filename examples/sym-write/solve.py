@@ -18,7 +18,8 @@ def main():
 	# By default, all symbolic write indices are concretized.
 	state = p.factory.entry_state(add_options={angr.options.SYMBOLIC_WRITE_ADDRESSES})
 
-	u = claripy.BVS("u", 8)
+	char_size = 1 * 8
+	u = claripy.BVS("u", char_size)
 	state.memory.store(0x804a021, u)
 
 	sm = p.factory.simulation_manager(state)
@@ -55,4 +56,6 @@ def test():
 	assert set(res) == good
 
 if __name__ == '__main__':
-	print(repr(main()))
+	res = main()
+	print(len(res))
+	print(repr(res))

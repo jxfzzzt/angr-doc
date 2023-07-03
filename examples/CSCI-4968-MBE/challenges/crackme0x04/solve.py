@@ -14,7 +14,7 @@ def main():
 	proj = angr.Project('crackme0x04', load_options={"auto_load_libs": False})
 
 	cfg = proj.analyses.CFG()
-	FIND_ADDR = cfg.kb.functions.function(name="exit").addr
+	FIND_ADDR = cfg.kb.functions.function(name="exit").addr # 这里获得的是exit函数的初始地址，因为成功结束就会调用exit函数
 	AVOID_ADDR = 0x080484fb # dword [esp] = str.Password_Incorrect__n ; [0x8048649:4]=0x73736150 LEA str.Password_Incorrect__n ; "Password Incorrect!." @ 0x8048649
 
 	sm = proj.factory.simulation_manager()
@@ -22,7 +22,7 @@ def main():
 
 	# embed()
 	#print(sm.found[0].posix.dumps(1))
-	return sm.found[0].posix.dumps(0) # .lstrip('+0').rstrip('B')
+	return sm.found[0].posix.dumps(0).lstrip(b'\0').rstrip(b'\0') # 观察源代码发现：数字和为15就可以成功
 
 def test():
 	# it SHOULD just be 96 but the way angr models scanf means that it could technically be any number of formats
@@ -33,7 +33,7 @@ def test():
 	assert subprocess.check_output('./crackme0x04 < input', shell=True) == b'IOLI Crackme Level 0x04\nPassword: Password OK!\n'
 
 if __name__ == '__main__':
-	print(repr(main()))
+	print(main())
 
 """
 [0x080483d0]> pdf @ main

